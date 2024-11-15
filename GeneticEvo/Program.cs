@@ -110,6 +110,5 @@ namespace GeneticEvo
             return optimalityCriterion; // 1230
         }
 
-        static 
     }
 }
