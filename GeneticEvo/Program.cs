@@ -21,9 +21,9 @@ namespace GeneticEvo
             LoadData(filePath, out numMachines, out numRequests, out timeWork, out deadlines, out penalties);
             GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm(numMachines, numRequests, timeWork, deadlines, penalties);
 
-            int populationSize = 10;
-            int numGenerations = 20;
-            double mutationProbability = 0.1;
+            int populationSize = 70;
+            int numGenerations = 200;
+            double mutationProbability = 0.05;
 
             List<int> bestSequenceRequests = geneticAlgorithm.Start(populationSize, numGenerations, mutationProbability);
 
