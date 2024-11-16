@@ -17,14 +17,23 @@ namespace GeneticEvo
             int[,] timeWork;
             int[] deadlines;
             int[] penalties;
-            int optimalityCriterion;
 
             LoadData(filePath, out numMachines, out numRequests, out timeWork, out deadlines, out penalties);
-            List<int> sequenceRequests = GenerateSequenceRequests(numRequests);
-            List<List<int>> population = new List<List<int>>();
+            GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm(numMachines, numRequests, timeWork, deadlines, penalties);
 
-            //optimalityCriterion = EvaluateOptimalityCriterion(sequenceRequests, deadlines, penalties, timeWork, numMachines, numRequests);
-            //Console.WriteLine(optimalityCriterion);
+            int populationSize = 10;
+            int numGenerations = 20;
+            double mutationProbability = 0.1;
+
+            List<int> bestSequenceRequests = geneticAlgorithm.Start(populationSize, numGenerations, mutationProbability);
+
+            Console.WriteLine("Лучшее решение: ");
+
+            foreach (var request in bestSequenceRequests)
+            {
+                Console.Write($"{request}   ");
+            }
+            Console.WriteLine($"\nЗначение критерия оптимальности: {geneticAlgorithm.EvaluateOptimalityCriterion(bestSequenceRequests)}");
         }
 
         static void LoadData(string filePath, out int numMachines, out int numRequests, out int[,] timeWork, out int[] deadlines, out int[] penalties)
@@ -59,56 +68,5 @@ namespace GeneticEvo
                 penalties[i] = int.Parse(penaltiesStr[i].Trim());
             }
         }
-
-        static List<int> GenerateSequenceRequests(int numRequests)
-        {
-            Random rnd = new Random();
-            List<int> sequenceRequests = new List<int>();
-
-            for (int i = 0; i < numRequests; i++) 
-            {
-                int request;
-
-                do request = rnd.Next(1, numRequests + 1);
-                while (sequenceRequests.Contains(request));
-
-                sequenceRequests.Add(request);
-            }
-
-            return sequenceRequests;
-        }
-
-        static int EvaluateOptimalityCriterion(List<int> sequenceRequests, int[] deadlines, int[] penalties, int[,] timeWork, int numMachines, int numRequests)
-        {
-            int optimalityCriterion = 0;
-
-            int[] endTimeForMachines = new int[numMachines];
-
-            foreach (int request in sequenceRequests) 
-            {
-                int requestIndex = request - 1;
-
-                for (int machine = 0; machine < numMachines; machine++)
-                {
-                    if (machine == 0)
-                    {
-                        endTimeForMachines[machine] += timeWork[machine, requestIndex];
-                    }
-                    else
-                    {
-                        endTimeForMachines[machine] = Math.Max(endTimeForMachines[machine], endTimeForMachines[machine - 1]) + timeWork[machine, requestIndex];
-                    }
-
-                }
-
-                int finishTime = endTimeForMachines[numMachines - 1];
-
-                int delay = Math.Max(0, finishTime - deadlines[requestIndex]);
-                optimalityCriterion += penalties[requestIndex] * delay;
-            }
-
-            return optimalityCriterion; // 1230
-        }
-
     }
 }
