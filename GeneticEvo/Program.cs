@@ -11,7 +11,8 @@ namespace GeneticEvo
     {
         static void Main(string[] args)
         {
-            string filePath = "Z15_5_9.DAT";
+            //string filePath = "Z15_5_9.DAT";
+            string filePath = "TEST.txt";
 
             int numMachines, numRequests;
             int[,] timeWork;

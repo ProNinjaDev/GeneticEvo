@@ -103,24 +103,47 @@ namespace GeneticEvo
             int length = parent1.Length;
             Random rnd = new Random();
 
-            int point = rnd.Next(1, length);
+            int start = rnd.Next(0, length);
+            int end = rnd.Next(start, length);
 
             int[] child1 = new int[length];
             int[] child2 = new int[length];
 
-            for (int i = 0; i < point; i++)
+            for(int i = 0; i < length; i++)
+            {
+                child1[i] = -1;
+                child2[i] = -1;
+            }
+
+            for (int i = start; i <= end; i++)
             {
                 child1[i] = parent1[i];
                 child2[i] = parent2[i];
             }
 
-            for (int i = point; i < length; i++)
-            {
-                child1[i] = parent2[i];
-                child2[i] = parent1[i];
-            }
+            FillRemainingGenes(child1, parent2, end + 1);
+            FillRemainingGenes(child1, parent2, 0);
+
+            FillRemainingGenes(child2, parent1, end + 1);
+            FillRemainingGenes(child2, parent1, 0);
 
             return (child1, child2);
+        }
+
+        private void FillRemainingGenes(int[] child, int[] parent, int start)
+        {
+            int length = child.Length;
+            int current = start;
+
+            for (int i = 0; i < length; i++)
+            {
+                int gene = parent[i];
+                if (!child.Contains(gene))
+                {
+                    child[current % length] = gene;
+                    current++;
+                }
+            }
         }
 
         public List<int> Start(int populationSize, int numGenerations, double mutationProbability)
