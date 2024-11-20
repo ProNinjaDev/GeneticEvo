@@ -238,32 +238,45 @@ namespace GeneticEvo
         {
             int optimalityCriterion = 0;
 
-            int[] endTimeForMachines = new int[numMachines];
+            Dictionary<int, List<(int Start, int End)>> schedule = new Dictionary<int, List<(int Start, int End)>>();
+
+            int[] startTimeForMachines = new int[numMachines];
 
             foreach (int request in sequenceRequests)
             {
                 int requestIndex = request - 1;
 
+                int[] startTimes = new int[numMachines];
+                int[] endTimes = new int[numMachines];
+
                 for (int machine = 0; machine < numMachines; machine++)
                 {
                     if (machine == 0)
                     {
-                        endTimeForMachines[machine] += timeWork[machine, requestIndex];
+                        startTimes[machine] = startTimeForMachines[machine];
                     }
                     else
                     {
-                        endTimeForMachines[machine] = Math.Max(endTimeForMachines[machine], endTimeForMachines[machine - 1]) + timeWork[machine, requestIndex];
+                        startTimes[machine] = Math.Max(startTimeForMachines[machine], endTimes[machine - 1]);
                     }
 
+                    endTimes[machine] = startTimes[machine] + timeWork[machine, requestIndex];
+                    startTimeForMachines[machine] = endTimes[machine];
                 }
 
-                int finishTime = endTimeForMachines[numMachines - 1];
-
+                int finishTime = endTimes[numMachines - 1];
                 int delay = Math.Max(0, finishTime - deadlines[requestIndex]);
                 optimalityCriterion += penalties[requestIndex] * delay;
+
+                List<(int Start, int End)> machineSchedule = new List<(int Start, int End)>();
+                for (int machine = 0; machine < numMachines; machine++)
+                {
+                    machineSchedule.Add((startTimes[machine], endTimes[machine]));
+                }
+                schedule[request] = machineSchedule;
             }
 
-            return optimalityCriterion; // 1230
+            return optimalityCriterion;
         }
     }
 }
