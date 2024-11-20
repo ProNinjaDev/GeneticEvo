@@ -158,7 +158,7 @@ namespace GeneticEvo
                 List<int> fitnesses = new List<int>();
                 foreach (var individual in population)
                 {
-                    fitnesses.Add(EvaluateOptimalityCriterion(individual));
+                    fitnesses.Add(EvaluateOptimalityCriterion(individual).Item1);
                 }
 
                 List<int> selectedIndices = Selection(fitnesses);
@@ -192,7 +192,7 @@ namespace GeneticEvo
                 fitnesses.Clear();
                 foreach (var individual in population)
                 {
-                    fitnesses.Add(EvaluateOptimalityCriterion(individual));
+                    fitnesses.Add(EvaluateOptimalityCriterion(individual).Item1);
                 }
 
                 int currentBestFitness = fitnesses.Min();
@@ -234,7 +234,7 @@ namespace GeneticEvo
             return sequenceRequests;
         }
 
-        public int EvaluateOptimalityCriterion(List<int> sequenceRequests)
+        public (int, Dictionary<int, List<(int Start, int End)>>) EvaluateOptimalityCriterion(List<int> sequenceRequests)
         {
             int optimalityCriterion = 0;
 
@@ -276,7 +276,7 @@ namespace GeneticEvo
                 schedule[request] = machineSchedule;
             }
 
-            return optimalityCriterion;
+            return (optimalityCriterion, schedule);
         }
     }
 }

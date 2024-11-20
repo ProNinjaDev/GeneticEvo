@@ -11,8 +11,8 @@ namespace GeneticEvo
     {
         static void Main(string[] args)
         {
-            //string filePath = "Z15_5_9.DAT";
-            string filePath = "TEST2.txt";
+            string filePath = "Z15_5_9.DAT";
+            //string filePath = "TEST2.txt";
 
             int numMachines, numRequests;
             int[,] timeWork;
@@ -34,9 +34,22 @@ namespace GeneticEvo
             {
                 Console.Write($"{request}   ");
             }
-            Console.WriteLine($"\nЗначение критерия оптимальности: {geneticAlgorithm.EvaluateOptimalityCriterion(bestSequenceRequests)}");
 
+            Console.WriteLine("\n");
+            var result = geneticAlgorithm.EvaluateOptimalityCriterion(bestSequenceRequests);
 
+            int optimalityCriterion = result.Item1;
+            Dictionary<int, List<(int Start, int End)>> schedule = result.Item2;
+
+            foreach (var entry in schedule)
+            {
+                Console.WriteLine($"Заявка {entry.Key}:");
+                for (int machine = 0; machine < entry.Value.Count; machine++)
+                {
+                    Console.WriteLine($"  Станок {machine + 1}: Начало {entry.Value[machine].Start}, Конец {entry.Value[machine].End}");
+                }
+            }
+            Console.WriteLine($"Критерий оптимальности: {optimalityCriterion}");
         }
 
         static void LoadData(string filePath, out int numMachines, out int numRequests, out int[,] timeWork, out int[] deadlines, out int[] penalties)
