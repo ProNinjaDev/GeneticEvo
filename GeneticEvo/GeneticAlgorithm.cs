@@ -163,8 +163,6 @@ namespace GeneticEvo
 
                 List<int> selectedIndices = Selection(fitnesses);
 
-                List<List<int>> newPopulation = new List<List<int>>();
-
                 for (int i = 0; i < selectedIndices.Count; i += 2)
                 {
                     int[] parent1 = population[selectedIndices[i]].ToArray();
@@ -177,23 +175,24 @@ namespace GeneticEvo
                     {
                         child1 = Mutation(child1);
                     }
-                    newPopulation.Add(child1.ToList());
 
                     if (rnd.NextDouble() < mutationProbability)
                     {
                         child2 = Mutation(child2);
                     }
-                    newPopulation.Add(child2.ToList());
+
+                    population.Add(child1.ToList());
+                    population.Add(child2.ToList());
 
                 }
-
-                population = newPopulation;
 
                 fitnesses.Clear();
                 foreach (var individual in population)
                 {
                     fitnesses.Add(EvaluateOptimalityCriterion(individual).Item1);
                 }
+
+                population = PerformReplacement(population, fitnesses, populationSize);
 
                 int currentBestFitness = fitnesses.Min();
                 int currentBestIndex = fitnesses.IndexOf(currentBestFitness);
@@ -278,5 +277,35 @@ namespace GeneticEvo
 
             return (optimalityCriterion, schedule);
         }
+
+        private List<List<int>> PerformReplacement(List<List<int>> population, List<int> fitnesses, int targetSize)
+        {
+            List<(int Index, int Fitness)> indexedFitnesses = new List<(int, int)>();
+            for (int i = 0; i < fitnesses.Count; i++)
+            {
+                indexedFitnesses.Add((i, fitnesses[i]));
+            }
+
+            for (int i = 0; i < indexedFitnesses.Count - 1; i++)
+            {
+                for (int j = i + 1; j < indexedFitnesses.Count; j++)
+                {
+                    if (indexedFitnesses[i].Fitness > indexedFitnesses[j].Fitness)
+                    {
+                        (indexedFitnesses[i], indexedFitnesses[j]) = (indexedFitnesses[j], indexedFitnesses[i]);
+                    }
+                }
+            }
+
+            List<List<int>> newPopulation = new List<List<int>>();
+            for (int i = 0; i < targetSize; i++)
+            {
+                int index = indexedFitnesses[i].Index;
+                newPopulation.Add(population[index]);
+            }
+
+            return newPopulation;
+        }
+
     }
 }
