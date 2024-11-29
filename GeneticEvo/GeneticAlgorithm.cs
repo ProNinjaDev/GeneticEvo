@@ -79,7 +79,6 @@ namespace GeneticEvo
 
         public int[] Mutation(int[] individual)
         {
-            Random rnd = new Random();
 
             int[] mutant = (int[])individual.Clone();
             int length = mutant.Length;
@@ -101,7 +100,6 @@ namespace GeneticEvo
         public (int[], int[]) Crossover(int[] parent1, int[] parent2)
         {
             int length = parent1.Length;
-            Random rnd = new Random();
 
             int start = rnd.Next(0, length);
             int end = rnd.Next(start, length);
@@ -146,14 +144,17 @@ namespace GeneticEvo
             }
         }
 
-        public List<int> Start(int populationSize, int numGenerations, double mutationProbability)
+        public List<int> Start(int populationSize, int numGenerations, double mutationProbability, int stagnationLimit, double fitnessThreshold)
         {
             List<List<int>> population = InitializePopulation(populationSize);
 
-            List<int> bestSequenceRequests = new List<int>();
+            List<int> bestIndividual = new List<int>();
             int bestFitness = int.MaxValue;
 
-            for(int generation = 0; generation < numGenerations; generation++)
+            int stagnationCounter = 0;
+            int lastBestFitness = int.MaxValue;
+
+            for (int generation = 0; generation < numGenerations; generation++)
             {
                 List<int> fitnesses = new List<int>();
                 foreach (var individual in population)
@@ -171,7 +172,7 @@ namespace GeneticEvo
                     int[] child1, child2;
                     (child1, child2) = Crossover(parent1, parent2);
 
-                    if(rnd.NextDouble() < mutationProbability)
+                    if (rnd.NextDouble() < mutationProbability)
                     {
                         child1 = Mutation(child1);
                     }
@@ -186,23 +187,47 @@ namespace GeneticEvo
 
                 }
 
+                population = PerformReplacement(population, fitnesses, populationSize);
+
                 fitnesses.Clear();
                 foreach (var individual in population)
                 {
                     fitnesses.Add(EvaluateOptimalityCriterion(individual).Item1);
                 }
 
-                population = PerformReplacement(population, fitnesses, populationSize);
-
                 int currentBestFitness = fitnesses.Min();
                 int currentBestIndex = fitnesses.IndexOf(currentBestFitness);
+
+                Console.WriteLine($"Популяция {generation}: Лучшая приспособленность = {currentBestFitness}, Особь = {string.Join(",", population[currentBestIndex])}");
+                double avgFitness = fitnesses.Average();
+                double stdDevFitness = Math.Sqrt(fitnesses.Select(f => Math.Pow(f - avgFitness, 2)).Average());
+                Console.WriteLine($"Средняя приспособленность = {avgFitness}, Стандартное отклонение = {stdDevFitness}");
+                Console.WriteLine("+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+");
+
+                if (Math.Abs(currentBestFitness - lastBestFitness) <= fitnessThreshold)
+                {
+                    stagnationCounter++;
+                }
+                else
+                {
+                    stagnationCounter = 0;
+                }
+                lastBestFitness = currentBestFitness;
+
                 if (currentBestFitness < bestFitness)
                 {
                     bestFitness = currentBestFitness;
-                    bestSequenceRequests = population[currentBestIndex];
+                    bestIndividual = population[currentBestIndex];
                 }
+
+                if (stagnationCounter >= stagnationLimit)
+                {
+                    Console.WriteLine($"Остановка алгоритма на {generation} поколении.\n Лучшая приспособленность: {bestFitness}");
+                    break;
+                }
+
             }
-            return bestSequenceRequests;
+            return bestIndividual;
         }
 
         private List<List<int>> InitializePopulation(int populationSize)
@@ -215,9 +240,8 @@ namespace GeneticEvo
             return population;
         }
 
-        static List<int> GenerateSequenceRequests(int numRequests)
+        private List<int> GenerateSequenceRequests(int numRequests)
         {
-            Random rnd = new Random();
             List<int> sequenceRequests = new List<int>();
 
             for (int i = 0; i < numRequests; i++)
