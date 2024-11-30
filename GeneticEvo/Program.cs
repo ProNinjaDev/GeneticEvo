@@ -25,8 +25,8 @@ namespace GeneticEvo
             int populationSize = 70;
             int numGenerations = 200;
             double mutationProbability = 0.05;
-            int stagnationLimit = populationSize;
-            int fitnessThreshold = 1;
+            int stagnationLimit = 2 * populationSize / (populationSize / 10);
+            int fitnessThreshold = 20;
 
             List<int> bestSequenceRequests = geneticAlgorithm.Start(populationSize, numGenerations, mutationProbability, stagnationLimit, fitnessThreshold);
 

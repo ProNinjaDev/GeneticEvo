@@ -187,13 +187,13 @@ namespace GeneticEvo
 
                 }
 
-                population = PerformReplacement(population, fitnesses, populationSize);
 
                 fitnesses.Clear();
                 foreach (var individual in population)
                 {
                     fitnesses.Add(EvaluateOptimalityCriterion(individual).Item1);
                 }
+                (population, fitnesses) = PerformReplacement(population, fitnesses, populationSize);
 
                 int currentBestFitness = fitnesses.Min();
                 int currentBestIndex = fitnesses.IndexOf(currentBestFitness);
@@ -302,7 +302,7 @@ namespace GeneticEvo
             return (optimalityCriterion, schedule);
         }
 
-        private List<List<int>> PerformReplacement(List<List<int>> population, List<int> fitnesses, int targetSize)
+        private (List<List<int>> NewPopulation, List<int> NewFitnesses) PerformReplacement(List<List<int>> population, List<int> fitnesses, int targetSize)
         {
             List<(int Index, int Fitness)> indexedFitnesses = new List<(int, int)>();
             for (int i = 0; i < fitnesses.Count; i++)
@@ -322,13 +322,15 @@ namespace GeneticEvo
             }
 
             List<List<int>> newPopulation = new List<List<int>>();
+            List<int> newFitnesses = new List<int>();
             for (int i = 0; i < targetSize; i++)
             {
                 int index = indexedFitnesses[i].Index;
                 newPopulation.Add(population[index]);
+                newFitnesses.Add(fitnesses[index]);
             }
 
-            return newPopulation;
+            return (newPopulation, newFitnesses);
         }
 
     }
