@@ -200,8 +200,7 @@ namespace GeneticEvo
 
                 Console.WriteLine($"Популяция {generation}: Лучшая приспособленность = {currentBestFitness}, Особь = {string.Join(",", population[currentBestIndex])}");
                 double avgFitness = fitnesses.Average();
-                double stdDevFitness = Math.Sqrt(fitnesses.Select(f => Math.Pow(f - avgFitness, 2)).Average());
-                Console.WriteLine($"Средняя приспособленность = {avgFitness}, Стандартное отклонение = {stdDevFitness}");
+                Console.WriteLine($"Средняя приспособленность = {avgFitness}");
                 Console.WriteLine("+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+");
 
                 if (Math.Abs(currentBestFitness - lastBestFitness) <= fitnessThreshold)
@@ -305,9 +304,15 @@ namespace GeneticEvo
         private (List<List<int>> NewPopulation, List<int> NewFitnesses) PerformReplacement(List<List<int>> population, List<int> fitnesses, int targetSize)
         {
             List<(int Index, int Fitness)> indexedFitnesses = new List<(int, int)>();
+            HashSet<string> uniqueIndividuals = new HashSet<string>();
             for (int i = 0; i < fitnesses.Count; i++)
             {
-                indexedFitnesses.Add((i, fitnesses[i]));
+                string individualKey = string.Join(",", population[i]);
+                if (!uniqueIndividuals.Contains(individualKey))
+                {
+                    indexedFitnesses.Add((i, fitnesses[i]));
+                    uniqueIndividuals.Add(individualKey);
+                }
             }
 
             for (int i = 0; i < indexedFitnesses.Count - 1; i++)
@@ -323,14 +328,30 @@ namespace GeneticEvo
 
             List<List<int>> newPopulation = new List<List<int>>();
             List<int> newFitnesses = new List<int>();
-            for (int i = 0; i < targetSize; i++)
+            for (int i = 0; i < Math.Min(targetSize, indexedFitnesses.Count); i++)
             {
                 int index = indexedFitnesses[i].Index;
                 newPopulation.Add(population[index]);
                 newFitnesses.Add(fitnesses[index]);
             }
 
+            while (newPopulation.Count < targetSize)
+            {
+                List<int> newIndividual = GenerateSequenceRequests(numRequests);
+                if (IsUnique(newIndividual, newPopulation))
+                {
+                    newPopulation.Add(newIndividual);
+                    newFitnesses.Add(EvaluateOptimalityCriterion(newIndividual).Item1);
+                }
+            }
+
             return (newPopulation, newFitnesses);
+        }
+
+        private bool IsUnique(List<int> individual, List<List<int>> population)
+        {
+            return !population.Any(existing =>
+                existing.SequenceEqual(individual));
         }
 
     }

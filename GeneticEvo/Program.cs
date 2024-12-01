@@ -22,8 +22,8 @@ namespace GeneticEvo
             LoadData(filePath, out numMachines, out numRequests, out timeWork, out deadlines, out penalties);
             GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm(numMachines, numRequests, timeWork, deadlines, penalties);
 
-            int populationSize = 70;
-            int numGenerations = 200;
+            int populationSize = 20;
+            int numGenerations = 100;
             double mutationProbability = 0.05;
             int stagnationLimit = 2 * populationSize / (populationSize / 10);
             int fitnessThreshold = 20;
